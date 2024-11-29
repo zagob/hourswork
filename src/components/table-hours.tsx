@@ -20,15 +20,18 @@ import { cn, getAllDaysOfMonh } from "@/lib/utils";
 import { format, getDay } from "date-fns";
 import { Button } from "./ui/button";
 import { Clock } from "lucide-react";
+import { Input } from "./ui/input";
 
 export type HoursProps = {
   date: Date;
 };
 
 export function TableHours() {
-  const data = getAllDaysOfMonh(2024, 10).map((value) => ({
-    date: value,
-  }));
+  const data = getAllDaysOfMonh(2024, 10)
+    .map((value) => ({
+      date: value,
+    }))
+    .filter(({ date }) => date.getDay() !== 0 && date.getDay() !== 6);
 
   const columns: ColumnDef<HoursProps>[] = React.useMemo(
     () => [
@@ -48,18 +51,33 @@ export function TableHours() {
         },
       },
       {
-        id: "register-hours",
+        header: "Time 1",
         cell: () => {
-          return (
-            <div>
-              <Button
-                variant="outline"
-                className="border-green-400 rounded text-green-400 hover:text-green-200"
-              >
-                <Clock className="size-6" />
-              </Button>
-            </div>
-          );
+          return <div className="opacity-50">00:00</div>;
+        },
+      },
+      {
+        header: "Time 2",
+        cell: () => {
+          return <div className="opacity-50">00:00</div>;
+        },
+      },
+      {
+        header: "Time 3",
+        cell: () => {
+          return <div className="opacity-50">00:00</div>;
+        },
+      },
+      {
+        header: "Time 4",
+        cell: () => {
+          return <div className="opacity-50">00:00</div>;
+        },
+      },
+      {
+        header: "Total hours",
+        cell: () => {
+          return <div className="opacity-50">00:00</div>;
         },
       },
     ],
