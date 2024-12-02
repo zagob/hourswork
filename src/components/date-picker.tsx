@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 
-import { cn, getAllDaysOfMonh } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -16,18 +16,25 @@ import {
 import { FormField } from "./ui/form";
 import { useFormContext } from "react-hook-form";
 import { useDateContext } from "@/contexts/date-provider";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/axios";
 
 export function DatePicker() {
-  const { date} = useDateContext();
-  //   const [date, setDate] = React.useState<Date>();
+  const { date } = useDateContext();
   const form = useFormContext();
 
-//   const datesMonthDisabled = getAllDaysOfMonh(
-//     Number(year),
-//     Number(month) - 1
-//   ).filter((value) => value.getDay() === 0 && value.getDay() === 6);
+  const { data: disabledDays } = useQuery<Array<Date>>({
+    queryKey: ["disable-days-month"],
+    queryFn: async () => {
+      const { data } = await api.get("/disable-days-month");
+      console.log("datadata", data);
 
-  //   console.log(datesMonth);
+      if (!data.disabledDays) return [];
+
+      return data?.disabledDays.map((date: string) => new Date(date));
+    },
+  });
+
   return (
     <FormField
       control={form.control}
@@ -57,9 +64,12 @@ export function DatePicker() {
               mode="single"
               required
               disableNavigation
-              disabled={{
-                dayOfWeek: [0, 6],
-              }}
+              disabled={[
+                {
+                  dayOfWeek: [0, 6],
+                },
+                ...(disabledDays ?? []),
+              ]}
               month={new Date(date.getFullYear(), date.getMonth())}
               className="bg-zinc-800 text-zinc-100 border border-zinc-600"
               selected={field.value}

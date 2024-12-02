@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 
 import * as React from "react";
@@ -16,22 +17,45 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { cn, getAllDaysOfMonh } from "@/lib/utils";
-import { format, getDay } from "date-fns";
-import { Button } from "./ui/button";
-import { Clock } from "lucide-react";
-import { Input } from "./ui/input";
+import { calculateTotalWorkTime, cn, getAllDaysOfMonh } from "@/lib/utils";
+import { format, getDay, getMonth, getYear } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/axios";
+import { useDateContext } from "@/contexts/date-provider";
 
 export type HoursProps = {
   date: Date;
+  id: null | string;
+  times: null | Array<{ name: string; entry: string; exit: string }>;
+  createdAt: null | string;
 };
 
 export function TableHours() {
-  const data = getAllDaysOfMonh(2024, 10)
-    .map((value) => ({
-      date: value,
-    }))
-    .filter(({ date }) => date.getDay() !== 0 && date.getDay() !== 6);
+  const { date } = useDateContext()
+  
+  const { data: registerHours } = useQuery<{
+    data: {
+      hours: HoursProps[];
+    };
+  }>({
+    queryKey: ["register-hours", getMonth(date), getYear(date)],
+    queryFn: async () => {
+      return await api.get("/register-hours", {
+        params: {
+          year: getYear(date),
+          month: getMonth(date)
+        }
+      });
+    },
+    staleTime: Infinity,
+  });
+
+  
+  // const data = getAllDaysOfMonh(2024, 10)
+  //   .map((value) => ({
+  //     date: value,
+  //   }))
+  //   .filter(({ date }) => date.getDay() !== 0 && date.getDay() !== 6);
 
   const columns: ColumnDef<HoursProps>[] = React.useMemo(
     () => [
@@ -39,6 +63,7 @@ export function TableHours() {
         header: "Date",
         cell: ({ row }) => {
           const { date } = row.original;
+
           return (
             <div
               className={cn({
@@ -52,32 +77,42 @@ export function TableHours() {
       },
       {
         header: "Time 1",
-        cell: () => {
-          return <div className="opacity-50">00:00</div>;
+        cell: ({ row }) => {
+          const { times } = row.original;
+          if (!times) return <div className="opacity-50">00:00</div>;
+          return <div>{times[0]?.entry}</div>;
         },
       },
       {
         header: "Time 2",
-        cell: () => {
-          return <div className="opacity-50">00:00</div>;
+        cell: ({ row }) => {
+          const { times } = row.original;
+          if (!times) return <div className="opacity-50">00:00</div>;
+          return <div>{times[0]?.exit}</div>;
         },
       },
       {
         header: "Time 3",
-        cell: () => {
-          return <div className="opacity-50">00:00</div>;
+        cell: ({ row }) => {
+          const { times } = row.original;
+          if (!times) return <div className="opacity-50">00:00</div>;
+          return <div>{times[1]?.entry}</div>;
         },
       },
       {
         header: "Time 4",
-        cell: () => {
-          return <div className="opacity-50">00:00</div>;
+        cell: ({ row }) => {
+          const { times } = row.original;
+          if (!times) return <div className="opacity-50">00:00</div>;
+          return <div>{times[1]?.exit}</div>;
         },
       },
       {
         header: "Total hours",
-        cell: () => {
-          return <div className="opacity-50">00:00</div>;
+        cell: ({ row }) => {
+          const { times } = row.original
+          if(!times) return <div className="opacity-50">00:00</div>
+          return <div>{calculateTotalWorkTime(times)}</div>
         },
       },
     ],
@@ -85,7 +120,8 @@ export function TableHours() {
   );
 
   const table = useReactTable({
-    data,
+    data: registerHours?.data.hours ?? [],
+    // data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });

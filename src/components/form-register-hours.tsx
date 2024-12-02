@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { DatePicker } from "./date-picker";
 import { useDateContext } from "@/contexts/date-provider";
 import { api } from "@/lib/axios";
+import { useQueryClient } from "@tanstack/react-query";
 
 const CreateHoursSchema = z.object({
   date: z.date(),
@@ -22,6 +23,7 @@ const CreateHoursSchema = z.object({
 type CreateHoursSchema = z.infer<typeof CreateHoursSchema>;
 
 export function FormRegisterHours() {
+  const queryClient = useQueryClient()
   const { date } = useDateContext();
   const [inputsTime, setInputsTime] = useState(4);
   const methods = useForm<CreateHoursSchema>({
@@ -31,11 +33,14 @@ export function FormRegisterHours() {
     },
   });
   const onSubmit = async (data: CreateHoursSchema) => {
-    console.log("data", data);
     await api.post("/register-hours", {
       date: data.date,
       times: data.times.join(),
-    });
+    })
+    methods.reset()
+    queryClient.invalidateQueries({
+      queryKey: ['register-hours']
+    })
   };
 
   const valueData = methods.watch("date");

@@ -39,7 +39,7 @@ export default async function Page() {
                   <SelectedMonth />
                 </h1>
               </div>
-              <DistanceDate />
+              {/* <DistanceDate /> */}
             </div>
             <MenuName />
           </div>
