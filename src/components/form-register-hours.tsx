@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { DatePicker } from "./date-picker";
 import { useDateContext } from "@/contexts/date-provider";
-import axios from "axios";
+import { api } from "@/lib/axios";
 
 const CreateHoursSchema = z.object({
   date: z.date(),
@@ -31,7 +31,11 @@ export function FormRegisterHours() {
     },
   });
   const onSubmit = async (data: CreateHoursSchema) => {
-    axios.post("/register-hours", data);
+    console.log("data", data);
+    await api.post("/register-hours", {
+      date: data.date,
+      times: data.times.join(),
+    });
   };
 
   const valueData = methods.watch("date");

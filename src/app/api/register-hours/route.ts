@@ -4,24 +4,26 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const bodyProps = z.object({
-  date: z.date(),
+  date: z.string(),
   times: z.string(),
 });
 
 export async function POST(req: Request) {
   try {
-    const { date, times } = bodyProps.parse(req.body);
+    const body = await req.json();
+    const { date, times } = bodyProps.parse(body);
     const auth = await currentUser();
-
     if (!auth) {
       throw new Error("Uneuthorized");
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: {
-        id: auth.id,
+        externalId: auth.id,
       },
     });
+
+    console.log("userr", user);
 
     if (!user) {
       throw new Error("User not found");
@@ -38,9 +40,11 @@ export async function POST(req: Request) {
     console.log({
       date,
       times,
-      register
+      register,
     });
+    return NextResponse.json({ message: "Hours registered" }, { status: 201 });
   } catch (err) {
+    console.log("errrrr", err);
     return NextResponse.json(
       {
         message: "Something went wrong",

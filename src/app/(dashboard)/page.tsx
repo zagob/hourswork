@@ -4,8 +4,27 @@ import { MenuName } from "@/components/menu-name";
 import { SelectedMonth } from "@/components/selected-month";
 import { TableHours } from "@/components/table-hours";
 import { DateProvider } from "@/contexts/date-provider";
+import { prisma } from "@/db/prismaClient";
+import { currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
-export default function Page() {
+export default async function Page() {
+  const auth = await currentUser();
+
+  if (!auth) {
+    redirect("/sign-in");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      externalId: auth.id,
+    },
+  });
+
+  if (!user) {
+    redirect("/auth-callback");
+  }
+
   return (
     <DateProvider>
       <div className="min-h-screen bg-zinc-900 text-zinc-50">

@@ -8,14 +8,17 @@ datasource db {
 }
 
 model User {
-  id    String @id @default(cuid())
-  name  String
-  email String @unique
+  id         String  @id @default(cuid())
+  externalId String? @unique
+  name       String
+  email      String  @unique
 
   detailHours   DetailHours? @relation(fields: [detailHoursId], references: [id])
   detailHoursId String?      @unique
 
   RegisterHours RegisterHours[]
+
+  @@index([email])
 }
 
 model DetailHours {

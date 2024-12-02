@@ -21,11 +21,9 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-  
-  dashboard,
+  children,
 }: Readonly<{
   children: React.ReactNode;
-  dashboard: React.ReactNode;
 }>) {
   return (
     <ClerkProvider>
@@ -33,9 +31,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <Providers>
-            {dashboard}
-          </Providers>
+          <Providers>{children}</Providers>
         </body>
       </html>
     </ClerkProvider>
