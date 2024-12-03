@@ -77,10 +77,16 @@ export async function GET(req: NextRequest) {
   const year = Number(searchParams.get('year'))
   const month = Number(searchParams.get('month'))
 
+  const startOfMonth = new Date(year, month)
+  const endOfMonth = new Date(year, month + 1)
+
   const hours = await prisma.registerHours.findMany({
     where: {
       userId: user.id,
-      createdAt: new Date(year, month)
+      createdAt: {
+        gte: startOfMonth,
+        lt: endOfMonth
+      }
     },
     select: {
       id: true,

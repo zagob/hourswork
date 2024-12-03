@@ -1,4 +1,5 @@
-import { DistanceDate } from "@/components/distance-date";
+// import { DistanceDate } from "@/components/distance-date";
+import { FormDetailsHours } from "@/components/form-details-hours";
 import { FormRegisterHours } from "@/components/form-register-hours";
 import { MenuName } from "@/components/menu-name";
 import { SelectedMonth } from "@/components/selected-month";
@@ -19,11 +20,16 @@ export default async function Page() {
     where: {
       externalId: auth.id,
     },
+    select: {
+      detailsHours: true
+    }
   });
 
   if (!user) {
     redirect("/auth-callback");
   }
+
+  const isDetailsHours = user.detailsHours
 
   return (
     <DateProvider>
@@ -39,14 +45,13 @@ export default async function Page() {
                   <SelectedMonth />
                 </h1>
               </div>
-              {/* <DistanceDate /> */}
             </div>
             <MenuName />
           </div>
 
           <div className="w-full h-px bg-zinc-700" />
 
-          <FormRegisterHours />
+          {isDetailsHours ? <FormRegisterHours /> : <FormDetailsHours />}
           <TableHours />
         </div>
       </div>

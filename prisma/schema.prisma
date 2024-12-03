@@ -13,9 +13,7 @@ model User {
   name       String
   email      String  @unique
 
-  detailHours   DetailHours? @relation(fields: [detailHoursId], references: [id])
-  detailHoursId String?      @unique
-
+  detailsHours  DetailHours?
   RegisterHours RegisterHours[]
 
   @@index([email])
@@ -23,9 +21,11 @@ model User {
 
 model DetailHours {
   id               String @id @default(cuid())
-  totalHoursWorked Int
+  totalHours       String
+  totalHoursWorked String
 
-  User User?
+  User   User   @relation(fields: [userId], references: [id])
+  userId String @unique
 }
 
 model RegisterHours {
