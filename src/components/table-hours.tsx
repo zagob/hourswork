@@ -13,11 +13,12 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { calculateTotalWorkTime, cn, getAllDaysOfMonh } from "@/lib/utils";
+import { calculateTotalWorkTime, cn, timeStringToMinutes } from "@/lib/utils";
 import { format, getDay, getMonth, getYear } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
@@ -28,11 +29,16 @@ export type HoursProps = {
   id: null | string;
   times: null | Array<{ name: string; entry: string; exit: string }>;
   createdAt: null | string;
+  user: {
+    detailsHours: {
+      totalHours: string;
+    };
+  };
 };
 
 export function TableHours() {
-  const { date } = useDateContext()
-  
+  const { date } = useDateContext();
+
   const { data: registerHours } = useQuery<{
     data: {
       hours: HoursProps[];
@@ -43,19 +49,12 @@ export function TableHours() {
       return await api.get("/register-hours", {
         params: {
           year: getYear(date),
-          month: getMonth(date)
-        }
+          month: getMonth(date),
+        },
       });
     },
     staleTime: Infinity,
   });
-
-  
-  // const data = getAllDaysOfMonh(2024, 10)
-  //   .map((value) => ({
-  //     date: value,
-  //   }))
-  //   .filter(({ date }) => date.getDay() !== 0 && date.getDay() !== 6);
 
   const columns: ColumnDef<HoursProps>[] = React.useMemo(
     () => [
@@ -110,9 +109,39 @@ export function TableHours() {
       {
         header: "Total hours",
         cell: ({ row }) => {
-          const { times } = row.original
-          if(!times) return <div className="opacity-50">00:00</div>
-          return <div>{calculateTotalWorkTime(times)}</div>
+          const { times, user } = row.original;
+          if (!times) return <div className="opacity-50">00:00</div>;
+
+          const timesCalculate = calculateTotalWorkTime(times);
+
+          const isHoursPositive =
+            timeStringToMinutes(timesCalculate) >
+            timeStringToMinutes(user.detailsHours.totalHours);
+          const isHoursEqual =
+            timeStringToMinutes(timesCalculate) ===
+            timeStringToMinutes(user.detailsHours.totalHours);
+          const isHoursNegative =
+            timeStringToMinutes(timesCalculate) <
+            timeStringToMinutes(user.detailsHours.totalHours);
+
+          return (
+            <div className="flex items-center gap-2">
+              {timesCalculate}
+              {isHoursNegative && (
+                <div className="size-2 rounded-full bg-red-500" />
+              )}
+              {isHoursEqual && (
+                <div className="size-2 rounded-full bg-zinc-500" />
+              )}
+              {isHoursPositive && (
+                <div className="size-2 rounded-full bg-green-500" />
+              )}
+            </div>
+          );
+        },
+        footer: ({ table, column }) => {
+          console.log('table',table.getFilteredRowModel().rows.map(({ original }) => original))
+          return <div>test</div>;
         },
       },
     ],
@@ -159,6 +188,22 @@ export function TableHours() {
               </TableRow>
             ))}
           </TableBody>
+          <TableFooter>
+            {table.getFooterGroups().map((footerGroup) => (
+              <TableRow className="border-zinc-700/80" key={footerGroup.id}>
+                {footerGroup.headers.map((header) => (
+                  <TableHead className="text-zinc-200 bg-zinc-800" key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.footer,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableFooter>
         </Table>
       </div>
     </div>

@@ -72,27 +72,36 @@ export async function GET(req: NextRequest) {
   if (!user) {
     throw new Error("User not found");
   }
-  const searchParams = req.nextUrl.searchParams
+  const searchParams = req.nextUrl.searchParams;
 
-  const year = Number(searchParams.get('year'))
-  const month = Number(searchParams.get('month'))
+  const year = Number(searchParams.get("year"));
+  const month = Number(searchParams.get("month"));
 
-  const startOfMonth = new Date(year, month)
-  const endOfMonth = new Date(year, month + 1)
+  const startOfMonth = new Date(year, month);
+  const endOfMonth = new Date(year, month + 1);
 
   const hours = await prisma.registerHours.findMany({
     where: {
       userId: user.id,
       createdAt: {
         gte: startOfMonth,
-        lt: endOfMonth
-      }
+        lt: endOfMonth,
+      },
     },
     select: {
       id: true,
       times: true,
       createdAt: true,
-    }
+      user: {
+        select: {
+          detailsHours: {
+            select: {
+              totalHours: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   const hoursFormat = hours.map((hour) => {
