@@ -13,7 +13,7 @@ export default async function Page() {
   const auth = await currentUser();
 
   if (!auth) {
-    redirect("/sign-in");
+    return redirect("/sign-in");
   }
 
   const user = await prisma.user.findUnique({
@@ -26,7 +26,7 @@ export default async function Page() {
   });
 
   if (!user) {
-    redirect("/auth-callback");
+    return redirect("/auth-callback");
   }
 
   const isDetailsHours = user.detailsHours

@@ -6,6 +6,7 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  Row,
   useReactTable,
 } from "@tanstack/react-table";
 
@@ -61,12 +62,12 @@ export function TableHours() {
       {
         header: "Date",
         cell: ({ row }) => {
-          const { date } = row.original;
+          const { date, times } = row.original;
 
           return (
             <div
               className={cn({
-                "opacity-40": getDay(date) === 0 || getDay(date) === 6,
+                "opacity-40": (getDay(date) === 0 || getDay(date) === 6) || !times,
               })}
             >
               {format(date, "dd/MM/yyyy")}
@@ -74,38 +75,20 @@ export function TableHours() {
           );
         },
       },
-      {
-        header: "Time 1",
-        cell: ({ row }) => {
-          const { times } = row.original;
+      ...(Array.from({ length: 4 })).map((_, i) => ({
+        header: `Time ${i+1}`,
+        cell: ({ row }: { row: Row<HoursProps> }) => {
+          const { times } = row.original
           if (!times) return <div className="opacity-50">00:00</div>;
-          return <div>{times[0]?.entry}</div>;
-        },
-      },
-      {
-        header: "Time 2",
-        cell: ({ row }) => {
-          const { times } = row.original;
-          if (!times) return <div className="opacity-50">00:00</div>;
-          return <div>{times[0]?.exit}</div>;
-        },
-      },
-      {
-        header: "Time 3",
-        cell: ({ row }) => {
-          const { times } = row.original;
-          if (!times) return <div className="opacity-50">00:00</div>;
-          return <div>{times[1]?.entry}</div>;
-        },
-      },
-      {
-        header: "Time 4",
-        cell: ({ row }) => {
-          const { times } = row.original;
-          if (!times) return <div className="opacity-50">00:00</div>;
-          return <div>{times[1]?.exit}</div>;
-        },
-      },
+
+          const time = times.flatMap(time => [time.entry, time.exit])[i]
+
+          if(!time) return <div>-</div>
+
+          return <div>{time}</div>
+        }
+      })),
+      
       {
         header: "Total hours",
         cell: ({ row }) => {
@@ -139,7 +122,7 @@ export function TableHours() {
             </div>
           );
         },
-        footer: ({ table, column }) => {
+        footer: ({ table }) => {
           console.log('table',table.getFilteredRowModel().rows.map(({ original }) => original))
           return <div>test</div>;
         },

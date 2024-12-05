@@ -125,17 +125,15 @@ export async function GET(req: NextRequest) {
 
   const hoursWithAllDaysOfMonth = getAllDaysOfMonh(year, month)
     .map((value) => {
-      if (
-        hoursFormat.find(
-          (hour) => format(value, "dd/MM") === format(hour.createdAt, "dd/MM")
-        )
-      ) {
-        const hour = hoursFormat.find(
-          (hour) => format(value, "dd/MM") === format(hour.createdAt, "dd/MM")
-        );
+      const hoursRegistred = hoursFormat.find(
+        (hour) => format(value, "dd/MM") === format(hour.createdAt, "dd/MM")
+      )
+
+      if (hoursRegistred) {
+        // const totalHours = hour
         return {
           date: value,
-          ...hour,
+          ...hoursRegistred,
         };
       }
 
