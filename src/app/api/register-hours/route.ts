@@ -1,5 +1,5 @@
 import { prisma } from "@/db/prismaClient";
-import { getAllDaysOfMonh } from "@/lib/utils";
+import { calculateTotalWorkTime, getAllDaysOfMonh } from "@/lib/utils";
 import { currentUser } from "@clerk/nextjs/server";
 import { format } from "date-fns";
 import { NextRequest, NextResponse } from "next/server";
@@ -130,9 +130,11 @@ export async function GET(req: NextRequest) {
       )
 
       if (hoursRegistred) {
-        // const totalHours = hour
+        const totalHoursTimesCalculate = calculateTotalWorkTime(hoursRegistred.times);
+
         return {
           date: value,
+          totalHoursTime: totalHoursTimesCalculate,
           ...hoursRegistred,
         };
       }
