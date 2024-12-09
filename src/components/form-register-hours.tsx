@@ -11,45 +11,58 @@ import { Clock, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { DatePicker } from "./date-picker";
-import { useDateContext } from "@/contexts/date-provider";
 import { api } from "@/lib/axios";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import clsx from "clsx";
+import { useDateContext } from "@/contexts/date-provider";
 
 const CreateHoursSchema = z.object({
   date: z.date(),
-  times: z.array(z.string()).min(1),
+  times: z.array(z.string().min(4, { message: "Obrigatório" })).min(1),
 });
 
 type CreateHoursSchema = z.infer<typeof CreateHoursSchema>;
 
 export function FormRegisterHours() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   const { date } = useDateContext();
   const [inputsTime, setInputsTime] = useState(4);
   const methods = useForm<CreateHoursSchema>({
     resolver: zodResolver(CreateHoursSchema),
-    defaultValues: {
-      date: date,
-    },
   });
+
+  // const timesError = methods.formState.errors.times;
+
   const onSubmit = async (data: CreateHoursSchema) => {
-    await api.post("/register-hours", {
-      date: data.date,
-      times: data.times.join(),
-    })
-    methods.reset()
-    queryClient.invalidateQueries({
-      queryKey: ['register-hours']
-    })
+    registerHours(data);
   };
+
+  const { mutate: registerHours, isPending: isLoadingRegisterHours } =
+    useMutation<void, AxiosError, CreateHoursSchema>({
+      mutationFn: async (data) =>
+        await api.post("/register-hours", {
+          date: data.date,
+          times: data.times.join(),
+        }),
+      onSuccess: () => {
+        methods.reset();
+        queryClient.invalidateQueries({
+          queryKey: ["disable-days-month"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["register-hours"],
+        });
+      },
+    });
 
   const valueData = methods.watch("date");
 
-  console.log(methods.getValues("date"));
-
   useEffect(() => {
-    methods.setValue("date", date);
-  }, [date]);
+    if (date) {
+      methods.reset();
+    }
+  }, [date, methods]);
 
   return (
     <FormProvider {...methods}>
@@ -72,7 +85,10 @@ export function FormRegisterHours() {
                   <Input
                     type="time"
                     disabled={!valueData}
-                    className="w-28 border-zinc-600 outline-none focus:border-orange-500"
+                    className={clsx(
+                      "w-28 border-zinc-600 outline-none focus:border-orange-500"
+                    )}
+                    // required
                     {...methods.register(`times.${index}`)}
                   />
                   {time > 4 && timePar && (
@@ -86,7 +102,7 @@ export function FormRegisterHours() {
                 </div>
               );
             })}
-            <Button type="submit">
+            <Button disabled={isLoadingRegisterHours} type="submit">
               <Clock />
               Registrar
             </Button>

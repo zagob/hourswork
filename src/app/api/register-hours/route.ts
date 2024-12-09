@@ -1,5 +1,9 @@
 import { prisma } from "@/db/prismaClient";
-import { calculateTotalWorkTime, getAllDaysOfMonh } from "@/lib/utils";
+import {
+  calculateTotalWorkTime,
+  getAllDaysOfMonh,
+  timeStringToMinutes,
+} from "@/lib/utils";
 import { currentUser } from "@clerk/nextjs/server";
 import { format } from "date-fns";
 import { NextRequest, NextResponse } from "next/server";
@@ -127,14 +131,34 @@ export async function GET(req: NextRequest) {
     .map((value) => {
       const hoursRegistred = hoursFormat.find(
         (hour) => format(value, "dd/MM") === format(hour.createdAt, "dd/MM")
-      )
+      );
 
       if (hoursRegistred) {
-        const totalHoursTimesCalculate = calculateTotalWorkTime(hoursRegistred.times);
+        const totalHoursTimesCalculate = calculateTotalWorkTime(
+          hoursRegistred.times
+        );
+
+        const totalHoursTimesToMinutes = timeStringToMinutes(
+          totalHoursTimesCalculate
+        );
+        const totalHoursTimesDetailsToMinutes = timeStringToMinutes(
+          // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+          hoursRegistred.user.detailsHours?.totalHours!
+        );
+
+        let workhoursStatus = null;
+        if (totalHoursTimesToMinutes > totalHoursTimesDetailsToMinutes)
+          workhoursStatus = "POSITIVE";
+        if (totalHoursTimesToMinutes === totalHoursTimesDetailsToMinutes)
+          workhoursStatus = "EQUAL";
+        if (totalHoursTimesToMinutes < totalHoursTimesDetailsToMinutes)
+          workhoursStatus = "NEGATIVE";
 
         return {
           date: value,
           totalHoursTime: totalHoursTimesCalculate,
+          totalHoursTimesToMinutes,
+          workhoursStatus,
           ...hoursRegistred,
         };
       }

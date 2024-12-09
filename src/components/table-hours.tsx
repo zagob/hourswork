@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 
-import * as React from "react";
+import { useMemo } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -19,17 +19,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { calculateTotalWorkTime, cn, timeStringToMinutes } from "@/lib/utils";
+import { cn, minutesToTimeString, timeStringToMinutes } from "@/lib/utils";
 import { format, getDay, getMonth, getYear } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { useDateContext } from "@/contexts/date-provider";
+import { TableLoading } from "./table-loading";
 
 export type HoursProps = {
   date: Date;
   id: null | string;
   times: null | Array<{ name: string; entry: string; exit: string }>;
   createdAt: null | string;
+  totalHoursTime?: string;
+  totalHoursTimesToMinutes: number;
+  workhoursStatus: "POSITIVE" | "EQUAL" | "NEGATIVE";
   user: {
     detailsHours: {
       totalHours: string;
@@ -40,25 +44,31 @@ export type HoursProps = {
 export function TableHours() {
   const { date } = useDateContext();
 
-  const { data: registerHours } = useQuery<{
+  const [month, year] = useMemo(() => {
+    const month = getMonth(date);
+    const year = getYear(date);
+    return [month, year];
+  }, [date]);
+
+  const { data: registerHours, isFetching: isLoadingRegisterHours } = useQuery<{
     data: {
       hours: HoursProps[];
     };
   }>({
-    queryKey: ["register-hours", getMonth(date), getYear(date)],
+    queryKey: ["register-hours", month, year],
     queryFn: async () => {
+      console.log("Fetching data for:", { year, month });
       return await api.get("/register-hours", {
-        params: {
-          year: getYear(date),
-          month: getMonth(date),
-        },
+        params: { year, month },
       });
     },
-    staleTime: Infinity,
+    refetchOnWindowFocus: false,
   });
 
-  const columns: ColumnDef<HoursProps>[] = React.useMemo(
-    () => [
+  const columns: ColumnDef<HoursProps>[] = useMemo(() => {
+    console.log("Recalculating columns");
+
+    return [
       {
         header: "Date",
         cell: ({ row }) => {
@@ -67,7 +77,8 @@ export function TableHours() {
           return (
             <div
               className={cn({
-                "opacity-40": (getDay(date) === 0 || getDay(date) === 6) || !times,
+                "opacity-40":
+                  getDay(date) === 0 || getDay(date) === 6 || !times,
               })}
             >
               {format(date, "dd/MM/yyyy")}
@@ -75,76 +86,121 @@ export function TableHours() {
           );
         },
       },
-      ...(Array.from({ length: 4 })).map((_, i) => ({
-        header: `Time ${i+1}`,
+      ...Array.from({ length: 4 }).map((_, i) => ({
+        header: `Time ${i + 1}`,
         cell: ({ row }: { row: Row<HoursProps> }) => {
-          const { times } = row.original
+          const { times } = row.original;
           if (!times) return <div className="opacity-50">00:00</div>;
 
-          const time = times.flatMap(time => [time.entry, time.exit])[i]
+          const time = times.flatMap((time) => [time.entry, time.exit])[i];
 
-          if(!time) return <div>-</div>
+          if (!time) return <div>-</div>;
 
-          return <div>{time}</div>
-        }
+          return <div>{time}</div>;
+        },
       })),
-      
+
       {
         header: "Total hours",
         cell: ({ row }) => {
-          const { times, user } = row.original;
-          if (!times) return <div className="opacity-50">00:00</div>;
+          const { times, totalHoursTime, workhoursStatus } = row.original;
+          if (!times || !totalHoursTime)
+            return <div className="opacity-50">00:00</div>;
 
-          const timesCalculate = calculateTotalWorkTime(times);
-
-          const isHoursPositive =
-            timeStringToMinutes(timesCalculate) >
-            timeStringToMinutes(user.detailsHours.totalHours);
-          const isHoursEqual =
-            timeStringToMinutes(timesCalculate) ===
-            timeStringToMinutes(user.detailsHours.totalHours);
-          const isHoursNegative =
-            timeStringToMinutes(timesCalculate) <
-            timeStringToMinutes(user.detailsHours.totalHours);
+          const indicatorClasses = {
+            POSITIVE: "bg-green-500",
+            EQUAL: "bg-zinc-500",
+            NEGATIVE: "bg-red-500",
+          };
 
           return (
             <div className="flex items-center gap-2">
-              {timesCalculate}
-              {isHoursNegative && (
-                <div className="size-2 rounded-full bg-red-500" />
-              )}
-              {isHoursEqual && (
-                <div className="size-2 rounded-full bg-zinc-500" />
-              )}
-              {isHoursPositive && (
-                <div className="size-2 rounded-full bg-green-500" />
-              )}
+              {totalHoursTime}
+              <div
+                className={`size-2 rounded-full ${indicatorClasses[workhoursStatus]}`}
+              />
             </div>
           );
         },
         footer: ({ table }) => {
-          console.log('table',table.getFilteredRowModel().rows.map(({ original }) => original))
-          return <div>test</div>;
+          console.log(
+            "table",
+            table.getFilteredRowModel().rows.map(({ original }) => original)
+          );
+
+          const dataHours = table
+            .getFilteredRowModel()
+            .rows.map(({ original }) => original);
+
+          const totalHoursBalance = dataHours.reduce((acc, value) => {
+            if (!value.times) return acc;
+
+            const hoursTotalDay = timeStringToMinutes(
+              value.user.detailsHours.totalHours
+            );
+
+            const calculateRestHours = Math.abs(
+              value.totalHoursTimesToMinutes - hoursTotalDay
+            );
+
+            if (value.workhoursStatus === "POSITIVE") {
+              acc += calculateRestHours;
+            }
+
+            if (value.workhoursStatus === "NEGATIVE") {
+              acc -= calculateRestHours;
+            }
+
+            console.log("acc", acc);
+
+            return acc;
+          }, 0);
+
+          console.log({
+            totalHoursBalance,
+          });
+
+          const statusTotalBalance = Math.sign(totalHoursBalance) as 1 | -1 | 0;
+
+          const indicatorClasses = {
+            "0": "bg-zinc-500",
+            "1": "bg-green-500",
+            "-1": "bg-red-500",
+          };
+
+          return (
+            <div className="flex items-center gap-2">
+              {minutesToTimeString(Math.abs(totalHoursBalance))}
+              <div
+                className={`size-2 rounded-full ${indicatorClasses[statusTotalBalance]}`}
+              />
+            </div>
+          );
         },
       },
-    ],
-    []
-  );
+    ];
+  }, []);
 
   const table = useReactTable({
     data: registerHours?.data.hours ?? [],
-    // data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
 
+  if (isLoadingRegisterHours) {
+    return <TableLoading table={table} columns={columns} />;
+  }
+
   return (
-    <div className="w-full ">
+    <div className="w-full">
       <div className="rounded-md border border-zinc-600 bg-zinc-800 h-[calc(100vh-180px)] overflow-auto">
         <Table>
           <TableHeader className="">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow className="border-zinc-600" key={headerGroup.id}>
+              <TableRow
+                className="border-zinc-600 hover:bg-transparent"
+                key={headerGroup.id}
+              >
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id}>
@@ -162,7 +218,10 @@ export function TableHours() {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} className="border-zinc-700/80">
+              <TableRow
+                key={row.id}
+                className="border-zinc-700/80 hover:bg-zinc-700"
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -175,7 +234,10 @@ export function TableHours() {
             {table.getFooterGroups().map((footerGroup) => (
               <TableRow className="border-zinc-700/80" key={footerGroup.id}>
                 {footerGroup.headers.map((header) => (
-                  <TableHead className="text-zinc-200 bg-zinc-800" key={header.id}>
+                  <TableHead
+                    className="text-zinc-200 bg-zinc-800"
+                    key={header.id}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
