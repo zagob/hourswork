@@ -26,6 +26,8 @@ import { api } from "@/lib/axios";
 import { useDateContext } from "@/contexts/date-provider";
 import { TableLoading } from "./table-loading";
 
+import { ColumnDeleteHours } from "@/app/(dashboard)/(table-hours)/column-delete-hours";
+
 export type HoursProps = {
   date: Date;
   id: null | string;
@@ -62,6 +64,7 @@ export function TableHours() {
         params: { year, month },
       });
     },
+    placeholderData: (data) => data,
     refetchOnWindowFocus: false,
   });
 
@@ -178,6 +181,11 @@ export function TableHours() {
           );
         },
       },
+
+      {
+        id: "actions",
+        cell: ColumnDeleteHours,
+      },
     ];
   }, []);
 
@@ -220,7 +228,7 @@ export function TableHours() {
             {table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                className="border-zinc-700/80 hover:bg-zinc-700"
+                className="border-zinc-700/80 hover:bg-zinc-700 h-[48.8px]"
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

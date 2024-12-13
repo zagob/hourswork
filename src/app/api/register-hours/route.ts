@@ -1,3 +1,4 @@
+import { validateCurrentUser } from "@/app/actions";
 import { prisma } from "@/db/prismaClient";
 import {
   calculateTotalWorkTime,
@@ -178,4 +179,28 @@ export async function GET(req: NextRequest) {
     },
     { status: 200 }
   );
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const result = await validateCurrentUser();
+    if (!result) return;
+
+    const searchParams = req.nextUrl.searchParams;
+
+    const idHours = searchParams.get("id");
+
+    if (!idHours) return console.log("not id");
+
+    await prisma.registerHours.delete({
+      where: {
+        id: idHours,
+        userId: result.user.id,
+      },
+    });
+
+    return NextResponse.json("Register Deleted succefully", { status: 200 });
+  } catch (error) {
+    console.log(error);
+  }
 }

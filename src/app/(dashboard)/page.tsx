@@ -21,20 +21,20 @@ export default async function Page() {
       externalId: auth.id,
     },
     select: {
-      detailsHours: true
-    }
+      detailsHours: true,
+    },
   });
 
   if (!user) {
     return redirect("/auth-callback");
   }
 
-  const isDetailsHours = user.detailsHours
+  const isDetailsHours = user.detailsHours;
 
   return (
     <DateProvider>
       <div className="min-h-screen bg-zinc-900 text-zinc-50">
-        <div className="px-20 py-12 space-y-4">
+        <div className="px-20 py-6 space-y-4">
           <div className="flex items-center justify-between">
             <div
               className="flex items-center gap-2
