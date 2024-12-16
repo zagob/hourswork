@@ -4,6 +4,7 @@ import { FormRegisterHours } from "@/components/form-register-hours";
 import { MenuName } from "@/components/menu-name";
 import { SelectedMonth } from "@/components/selected-month";
 import { TableHours } from "@/components/table-hours";
+import { TotalBank } from "@/components/total-bank";
 import { DateProvider } from "@/contexts/date-provider";
 import { prisma } from "@/db/prismaClient";
 import { currentUser } from "@clerk/nextjs/server";
@@ -45,6 +46,7 @@ export default async function Page() {
                   <SelectedMonth />
                 </h1>
               </div>
+              <TotalBank />
             </div>
             <MenuName />
           </div>
