@@ -1,8 +1,8 @@
-import { validateCurrentUser } from "@/app/actions";
+// import { validateCurrentUser } from "@/app/actions";
 import { prisma } from "@/db/prismaClient";
 import { currentUser } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { NextResponse } from "next/server";
+// import { z } from "zod";
 
 export async function GET() {
   try {
@@ -55,78 +55,78 @@ export async function GET() {
   }
 }
 
-const bodyProps = z.object({
-  totalHours: z.string(),
-  totalHoursWorked: z.string(),
-});
+// const bodyProps = z.object({
+//   totalHours: z.string(),
+//   totalHoursWorked: z.string(),
+// });
 
-export async function POST(req: NextRequest) {
-  try {
-    const auth = await validateCurrentUser();
+// export async function POST(req: NextRequest) {
+//   try {
+//     const auth = await validateCurrentUser();
 
-    const body = await req.json();
+//     const body = await req.json();
 
-    const { totalHours, totalHoursWorked } = bodyProps.parse(body);
+//     const { totalHours, totalHoursWorked } = bodyProps.parse(body);
 
-    await prisma.detailHours.create({
-      data: {
-        totalHours,
-        totalHoursWorked,
-        userId: auth.user.id,
-      },
-    });
+//     await prisma.detailHours.create({
+//       data: {
+//         totalHours,
+//         totalHoursWorked,
+//         userId: auth.user.id,
+//       },
+//     });
 
-    return NextResponse.json(
-      { success: true },
-      {
-        status: 201,
-      }
-    );
-  } catch (err) {
-    return NextResponse.json(
-      {
-        message: "Something went wrong",
-        err,
-      },
-      { status: 500 }
-    );
-  }
-}
+//     return NextResponse.json(
+//       { success: true },
+//       {
+//         status: 201,
+//       }
+//     );
+//   } catch (err) {
+//     return NextResponse.json(
+//       {
+//         message: "Something went wrong",
+//         err,
+//       },
+//       { status: 500 }
+//     );
+//   }
+// }
 
-const bodyPropsPUT = z.object({
-  totalHoursWorked: z.string(),
-});
+// const bodyPropsPUT = z.object({
+//   totalHoursWorked: z.string(),
+// });
 
-export async function PUT(req: NextRequest) {
-  try {
-    const auth = await validateCurrentUser();
+// export async function PUT(req: NextRequest) {
+//   try {
+//     const auth = await validateCurrentUser();
 
-    const body = await req.json();
+//     const body = await req.json();
 
-    const { totalHoursWorked } = bodyPropsPUT.parse(body);
+//     const { totalHoursWorked } = bodyPropsPUT.parse(body);
 
-    await prisma.detailHours.update({
-      where: {
-        userId: auth.user.id,
-      },
-      data: {
-        totalHoursWorked,
-      },
-    });
+//     await prisma.detailHours.update({
+//       where: {
+//         userId: auth.user.id,
+//       },
+//       data: {
+//         totalHoursWorked,
+//       },
+//     });
 
-    return NextResponse.json(
-      { success: true, message: "detail hours updated success" },
-      {
-        status: 200,
-      }
-    );
-  } catch (err) {
-    return NextResponse.json(
-      {
-        message: "Something went wrong",
-        err,
-      },
-      { status: 500 }
-    );
-  }
-}
+//     return NextResponse.json(
+//       { success: true, message: "detail hours updated success" },
+//       {
+//         status: 200,
+//       }
+//     );
+//   } catch (err) {
+//     return NextResponse.json(
+//       {
+//         message: "Something went wrong",
+//         err,
+//       },
+//       { status: 500 }
+//     );
+//   }
+// }
