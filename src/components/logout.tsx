@@ -1,6 +1,6 @@
 "use client";
 
-import { SignInButton, SignOutButton, useAuth } from "@clerk/nextjs";
+import { SignOutButton, useAuth } from "@clerk/nextjs";
 import { Button } from "./ui/button";
 import { Power } from "lucide-react";
 
@@ -8,7 +8,7 @@ export function Logout() {
   const { sessionId } = useAuth();
 
   if (!sessionId) {
-    return null
+    return null;
   }
 
   return (
