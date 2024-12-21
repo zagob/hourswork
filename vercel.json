@@ -1,0 +1,17 @@
+{
+    "build": {
+      "env": {
+        "DATABASE_URL": "@database-url"
+      }
+    },
+    "builds": [
+      {
+        "src": "package.json",
+        "use": "@vercel/node",
+        "config": {
+          "includeFiles": ["prisma/schema.prisma"]
+        }
+      }
+    ]
+  }
+  
