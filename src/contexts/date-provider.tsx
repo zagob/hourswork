@@ -1,17 +1,10 @@
 "use client";
 
-import { isSaturday, isSunday } from "date-fns";
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 
 interface DataContextProps {
   onChangeMonth: (newMonth: number) => void;
-  onChangeYear: (newYear: string) => void;
+  // onChangeYear: (newYear: string) => void;
   date: Date;
 }
 
@@ -26,10 +19,10 @@ export function DateProvider({ children }: { children: ReactNode }) {
     setDate(new Date(year, newMonth));
   }
 
-  function onChangeYear(newYear: string) {}
+  // function onChangeYear(newYear: string) {}
 
   return (
-    <DateContext.Provider value={{ onChangeMonth, onChangeYear, date }}>
+    <DateContext.Provider value={{ onChangeMonth, date }}>
       {children}
     </DateContext.Provider>
   );

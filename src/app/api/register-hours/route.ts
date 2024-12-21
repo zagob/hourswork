@@ -3,11 +3,10 @@ import { prisma } from "@/db/prismaClient";
 import {
   calculateTotalWorkTime,
   getAllDaysOfMonh,
-  minutesToTimeString,
   timeStringToMinutes,
 } from "@/lib/utils";
 import { currentUser } from "@clerk/nextjs/server";
-import { differenceInMinutes, format, parse } from "date-fns";
+import { format } from "date-fns";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -35,7 +34,7 @@ export async function POST(req: Request) {
       throw new Error("User not found");
     }
 
-    const register = await prisma.registerHours.create({
+    await prisma.registerHours.create({
       data: {
         userId: user.id,
         createdAt: date,

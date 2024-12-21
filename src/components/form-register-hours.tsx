@@ -9,7 +9,6 @@ import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Clock, Loader2, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
 import { DatePicker } from "./date-picker";
 import { api } from "@/lib/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -17,6 +16,7 @@ import { AxiosError } from "axios";
 import clsx from "clsx";
 import { useDateContext } from "@/contexts/date-provider";
 import { getMonth, getYear } from "date-fns";
+import { cn } from "@/lib/utils";
 
 const CreateHoursSchema = z
   .object({
@@ -90,14 +90,14 @@ export function FormRegisterHours() {
             {Array.from({ length: inputsTime }).map((_, index) => {
               const time = index + 1;
 
-              // const timePar = time % 2 === 0;
+              const timePar = time % 2 === 0;
 
               return (
                 <div
                   key={time}
-                  // className={cn("relative", {
-                  //   "mr-2": timePar,
-                  // })}
+                  className={cn("relative", {
+                    "mr-2": timePar,
+                  })}
                 >
                   <Input
                     type="time"
@@ -107,14 +107,14 @@ export function FormRegisterHours() {
                     )}
                     {...methods.register(`times.${index}`)}
                   />
-                  {/* {time > 4 && timePar && (
+                  {time > 4 && timePar && (
                     <div
                       onClick={() => setInputsTime((state) => state - 2)}
                       className="border rounded-full size-3.5 flex items-center justify-center bg-red-500 border-zinc-500 absolute -top-1 -right-1 hover:bg-red-400 hover:cursor-pointer"
                     >
                       <X className="size-3" />
                     </div>
-                  )} */}
+                  )}
                 </div>
               );
             })}
