@@ -9,7 +9,7 @@ export const getDaysWorking = async () => {
 
   if (!auth) redirect("/sign-up");
 
-  const user = await prisma.user.findFirst({
+  await prisma.user.findFirst({
     where: { externalId: auth.id },
   });
 };

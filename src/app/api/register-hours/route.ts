@@ -3,10 +3,11 @@ import { prisma } from "@/db/prismaClient";
 import {
   calculateTotalWorkTime,
   getAllDaysOfMonh,
+  minutesToTimeString,
   timeStringToMinutes,
 } from "@/lib/utils";
 import { currentUser } from "@clerk/nextjs/server";
-import { format } from "date-fns";
+import { differenceInMinutes, format, parse } from "date-fns";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -30,8 +31,6 @@ export async function POST(req: Request) {
       },
     });
 
-    console.log("userr", user);
-
     if (!user) {
       throw new Error("User not found");
     }
@@ -44,17 +43,14 @@ export async function POST(req: Request) {
       },
     });
 
-    console.log({
-      date,
-      times,
-      register,
-    });
+    // calculate totalworked
+
     return NextResponse.json({ message: "Hours registered" }, { status: 201 });
   } catch (err) {
-    console.log("errrrr", err);
     return NextResponse.json(
       {
         message: "Something went wrong",
+        err,
       },
       { status: 500 }
     );

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { format } from "date-fns";
+import { format, startOfToday } from "date-fns";
 import { pt } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 
@@ -27,7 +27,6 @@ export function DatePicker() {
     queryKey: ["disable-days-month"],
     queryFn: async () => {
       const { data } = await api.get("/disable-days-month");
-      console.log("datadata", data);
 
       if (!data.disabledDays) return [];
 
@@ -45,7 +44,7 @@ export function DatePicker() {
             <Button
               variant={"outline"}
               className={cn(
-                "w-[280px] justify-start text-left font-normal bg-zinc-800 border-zinc-600 hover:bg-zinc-600 hover:text-zinc-300",
+                "w-full sm:w-[280px] justify-start text-left font-normal bg-zinc-800 border-zinc-600 hover:bg-zinc-600 hover:text-zinc-300",
                 !field.value && "text-muted-foreground"
               )}
             >
@@ -55,7 +54,7 @@ export function DatePicker() {
                   locale: pt,
                 })
               ) : (
-                <span>Selecione uma data</span>
+                <span>Select day</span>
               )}
             </Button>
           </PopoverTrigger>
@@ -69,6 +68,9 @@ export function DatePicker() {
                   dayOfWeek: [0, 6],
                 },
                 ...(disabledDays ?? []),
+                {
+                  after: startOfToday(),
+                },
               ]}
               month={new Date(date.getFullYear(), date.getMonth())}
               className="bg-zinc-800 text-zinc-100 border border-zinc-600"

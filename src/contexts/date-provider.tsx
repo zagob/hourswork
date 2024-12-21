@@ -28,8 +28,6 @@ export function DateProvider({ children }: { children: ReactNode }) {
 
   function onChangeYear(newYear: string) {}
 
-  console.log("date", date);
-
   return (
     <DateContext.Provider value={{ onChangeMonth, onChangeYear, date }}>
       {children}

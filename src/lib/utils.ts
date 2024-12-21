@@ -1,5 +1,14 @@
 import { clsx, type ClassValue } from "clsx";
-import { addMinutes, differenceInMinutes, eachDayOfInterval, endOfMonth, format, parse, startOfDay, startOfMonth } from "date-fns";
+import {
+  addMinutes,
+  differenceInMinutes,
+  eachDayOfInterval,
+  endOfMonth,
+  format,
+  parse,
+  startOfDay,
+  startOfMonth,
+} from "date-fns";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -19,23 +28,21 @@ export function minutesToTimeString(totalMinutes: number) {
   return format(time, "HH:mm");
 }
 
-export function calculateTotalWorkTime(times: Array<{ entry: string, exit: string }>){
-  let totalMinutes = 0
+export function calculateTotalWorkTime(
+  times: Array<{ entry: string; exit: string }>
+) {
+  let totalMinutes = 0;
 
-  for(let i = 0; i < times.length; i++) {
-    const { entry, exit } = times[i]
+  for (let i = 0; i < times.length; i++) {
+    const { entry, exit } = times[i];
 
-    const entryDate = parse(entry, "HH:mm", new Date())
-    const exitDate = parse(exit, "HH:mm", new Date())
+    const entryDate = parse(entry, "HH:mm", new Date());
+    const exitDate = parse(exit, "HH:mm", new Date());
 
-    totalMinutes += differenceInMinutes(exitDate, entryDate)
+    totalMinutes += differenceInMinutes(exitDate, entryDate);
   }
 
-  // const hours = Math.floor(totalMinutes / 60)
-  // const minutes = totalMinutes % 60
-
-  return minutesToTimeString(totalMinutes)
-  
+  return minutesToTimeString(totalMinutes);
 }
 
 export function getAllDaysOfMonh(year: number, month: number) {

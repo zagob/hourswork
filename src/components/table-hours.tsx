@@ -52,25 +52,23 @@ export function TableHours() {
     return [month, year];
   }, [date]);
 
-  const { data: registerHours, isFetching: isLoadingRegisterHours } = useQuery<{
+  const { data: registerHours, isLoading: isLoadingRegisterHours } = useQuery<{
     data: {
       hours: HoursProps[];
     };
   }>({
     queryKey: ["register-hours", month, year],
     queryFn: async () => {
-      console.log("Fetching data for:", { year, month });
       return await api.get("/register-hours", {
         params: { year, month },
       });
     },
     placeholderData: (data) => data,
+    staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
 
   const columns: ColumnDef<HoursProps>[] = useMemo(() => {
-    console.log("Recalculating columns");
-
     return [
       {
         header: "Date",
@@ -126,11 +124,6 @@ export function TableHours() {
           );
         },
         footer: ({ table }) => {
-          console.log(
-            "table",
-            table.getFilteredRowModel().rows.map(({ original }) => original)
-          );
-
           const dataHours = table
             .getFilteredRowModel()
             .rows.map(({ original }) => original);
@@ -154,14 +147,8 @@ export function TableHours() {
               acc -= calculateRestHours;
             }
 
-            console.log("acc", acc);
-
             return acc;
           }, 0);
-
-          console.log({
-            totalHoursBalance,
-          });
 
           const statusTotalBalance = Math.sign(totalHoursBalance) as 1 | -1 | 0;
 

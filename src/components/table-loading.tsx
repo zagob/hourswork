@@ -44,7 +44,7 @@ export function TableLoading({ table, columns }: TableLoadingProps) {
           ))}
         </TableHeader>
         <TableBody>
-          {[...Array(5)].map((_, rowIndex) => (
+          {[...Array(25)].map((_, rowIndex) => (
             <TableRow className="hover:bg-transparent" key={rowIndex}>
               {columns.map((_, cellIndex) => (
                 <TableCell key={cellIndex}>

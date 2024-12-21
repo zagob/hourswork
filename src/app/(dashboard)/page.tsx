@@ -1,13 +1,13 @@
-// import { DistanceDate } from "@/components/distance-date";
 import { FormDetailsHours } from "@/components/form-details-hours";
 import { FormRegisterHours } from "@/components/form-register-hours";
 import { MenuName } from "@/components/menu-name";
 import { SelectedMonth } from "@/components/selected-month";
 import { TableHours } from "@/components/table-hours";
-import { TotalBank } from "@/components/total-bank";
+// import { TotalBank } from "@/components/total-bank";
 import { DateProvider } from "@/contexts/date-provider";
 import { prisma } from "@/db/prismaClient";
 import { currentUser } from "@clerk/nextjs/server";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 
 export default async function Page() {
@@ -35,7 +35,7 @@ export default async function Page() {
   return (
     <DateProvider>
       <div className="min-h-screen bg-zinc-900 text-zinc-50">
-        <div className="px-20 py-6 space-y-4">
+        <div className="px-8 lg:px-20 py-6 space-y-4">
           <div className="flex items-center justify-between">
             <div
               className="flex items-center gap-2
@@ -46,7 +46,7 @@ export default async function Page() {
                   <SelectedMonth />
                 </h1>
               </div>
-              <TotalBank />
+              {/* <TotalBank /> */}
             </div>
             <MenuName />
           </div>
@@ -54,7 +54,22 @@ export default async function Page() {
           <div className="w-full h-px bg-zinc-700" />
 
           {isDetailsHours ? <FormRegisterHours /> : <FormDetailsHours />}
-          <TableHours />
+          {isDetailsHours ? (
+            <TableHours />
+          ) : (
+            <div className="flex flex-col items-center justify-center">
+              <Image
+                src="/brand-asset-wave.png"
+                className="opacity-40"
+                width={500}
+                height={1000}
+                alt="brand"
+              />
+              <span className="text-xl text-zinc-600">
+                Please, register your detailed hours of work.
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </DateProvider>
